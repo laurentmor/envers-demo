@@ -26,6 +26,6 @@ public class AuditRevisionListener implements RevisionListener {
                 && !"anonymousUser".equals(auth.getPrincipal());
         // Falls back to "system" for changes made outside an authenticated HTTP
         // request - e.g. DataSeeder running at startup, before anyone has logged in.
-        return realUser ? auth.getName() : "system";
+        return realUser && auth != null ? auth.getName() : "system";
     }
 }

@@ -16,7 +16,7 @@ public class MeController {
     @GetMapping("/api/me")
     public MeDto me(Authentication authentication) {
         List<String> roles = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
+                .map(authority -> authority.getAuthority())
                 .toList();
         return new MeDto(authentication.getName(), roles);
     }
