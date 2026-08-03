@@ -80,7 +80,7 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <scope>runtime</scope>
+            <scope>compile</scope>
         </dependency>
 
         <!-- Spring Boot 4 split spring-boot-autoconfigure into per-feature modules;

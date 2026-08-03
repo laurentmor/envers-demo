@@ -274,6 +274,7 @@ function App() {
                                             <td className="text-muted">{product.description || '—'}</td>
                                             <td className="text-end">{currencyFormatter.format(Number(product.price || 0))}</td>
                                             <td className="text-end">{product.quantity}</td>
+                                            
                                             <td className="text-end">
                                                 <div className="btn-group btn-group-sm">
                                                     <button className="btn btn-outline-secondary" title={t('history')} onClick={() => openHistoryModal(product)}>
