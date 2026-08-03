@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
@@ -57,7 +58,8 @@ public class Product {
     private Integer quantity;
     
     @ManyToOne
-    @JoinColumn(name = "added_by_id"  )
+    @JoinColumn(name = "added_by_id")
+    @JsonIgnoreProperties({"products", "password"})
     private Worker addedBy;
 
     /** Excluded from Envers history on purpose, to demonstrate @NotAudited. */

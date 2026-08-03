@@ -12,6 +12,7 @@
   "tableDescription": "Description",
   "tablePrice": "Prix",
   "tableQty": "Qté",
+  "tableAddedBy": "Ajouté par",
   "tableActions": "Actions",
   "history": "Historique",
   "edit": "Modifier",

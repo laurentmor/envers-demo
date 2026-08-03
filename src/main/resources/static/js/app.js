@@ -257,24 +257,25 @@ function App() {
                                         <th>{t('tableDescription')}</th>
                                         <th className="text-end" style={{ width: '120px' }}>{t('tablePrice')}</th>
                                         <th className="text-end" style={{ width: '90px' }}>{t('tableQty')}</th>
+                                        <th>{t('tableAddedBy')}</th>
                                         <th className="text-end" style={{ width: '190px' }}>{t('tableActions')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {loading ? (
-                                        <tr><td colSpan="6" className="text-center text-muted py-4">{t('loading')}</td></tr>
+                                        <tr><td colSpan="7" className="text-center text-muted py-4">{t('loading')}</td></tr>
                                     ) : error ? (
-                                        <tr><td colSpan="6" className="text-center text-danger py-4">{t('loadError')} {error}</td></tr>
+                                        <tr><td colSpan="7" className="text-center text-danger py-4">{t('loadError')} {error}</td></tr>
                                     ) : products.length === 0 ? (
-                                        <tr><td colSpan="6" className="text-center text-muted py-4">{t('noProducts')}</td></tr>
+                                        <tr><td colSpan="7" className="text-center text-muted py-4">{t('noProducts')}</td></tr>
                                     ) : products.map(product => (
                                         <tr key={product.id}>
                                             <td className="text-muted">{product.id}</td>
-                                            <td className="fw-medium">{product.name}</td>
+                                                <td className="fw-medium">{product.name}</td>
                                             <td className="text-muted">{product.description || '—'}</td>
                                             <td className="text-end">{currencyFormatter.format(Number(product.price || 0))}</td>
                                             <td className="text-end">{product.quantity}</td>
-                                            
+                                            <td>{product.addedBy?.name || '—'}</td>
                                             <td className="text-end">
                                                 <div className="btn-group btn-group-sm">
                                                     <button className="btn btn-outline-secondary" title={t('history')} onClick={() => openHistoryModal(product)}>
