@@ -1,0 +1,53 @@
+// Generated from ddl.sql (H2 2.4.240 export)
+// NOTE: provider set to "postgresql" as a placeholder — H2 has no native
+// Prisma connector. Change to your real target DB (mysql, sqlserver, etc.)
+// and adjust @db.* type annotations if it isn't Postgres.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id           BigInt    @id @default(autoincrement()) @map("ID")
+  price        Decimal   @map("PRICE") @db.Decimal(10, 2)
+  quantity     Int       @map("QUANTITY")
+  lastViewedAt DateTime? @map("LAST_VIEWED_AT") @db.Timestamptz(6)
+  description  String?   @map("DESCRIPTION") @db.VarChar(500)
+  name         String    @map("NAME") @db.VarChar(255)
+
+  @@map("PRODUCT")
+}
+
+model ProductAud {
+  rev             Int      @map("REV")
+  id              BigInt   @map("ID")
+  revtype         Int?     @map("REVTYPE") @db.SmallInt
+  descriptionMod  Boolean? @map("DESCRIPTION_MOD")
+  nameMod         Boolean? @map("NAME_MOD")
+  price           Decimal? @map("PRICE") @db.Decimal(10, 2)
+  priceMod        Boolean? @map("PRICE_MOD")
+  quantity        Int?     @map("QUANTITY")
+  quantityMod     Boolean? @map("QUANTITY_MOD")
+  description     String?  @map("DESCRIPTION") @db.VarChar(500)
+  name            String?  @map("NAME") @db.VarChar(255)
+
+  revInfo         Revinfo  @relation(fields: [rev], references: [rev])
+
+  @@id([rev, id])
+  @@map("PRODUCT_AUD")
+}
+
+model Revinfo {
+  rev      Int      @id @map("REV")
+  revtstmp BigInt?  @map("REVTSTMP")
+  username String?  @map("USERNAME") @db.VarChar(255)
+
+  productAuds ProductAud[]
+
+  @@map("REVINFO")
+}

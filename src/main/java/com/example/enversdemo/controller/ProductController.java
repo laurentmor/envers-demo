@@ -23,8 +23,11 @@ public class ProductController {
     // ---- plain CRUD ----------------------------------------------------
 
     @GetMapping
-    public List<Product> findAll() {
-        return productService.findAll();
+    
+    public ResponseEntity<List<Product>> findAll() {
+        return ResponseEntity.ok().body(productService.findAll());
+       
+    
     }
 
     @GetMapping("/{id}")

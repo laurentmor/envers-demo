@@ -293,6 +293,12 @@ function App() {
                                     ))}
                                 </tbody>
                             </table>
+                        <button command="show-modal" commandfor="my-dialog">Open dialog</button>
+
+<dialog id="my-dialog">
+  <p>This dialog was opened using an invoker command.</p>
+  <button commandfor="my-dialog" command="close">Close</button>
+</dialog>
                         </div>
                     </div>
                 </div>
