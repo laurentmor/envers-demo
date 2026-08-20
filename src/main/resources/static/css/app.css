@@ -58,6 +58,15 @@ body {
     margin-right: 8px;
     opacity: 0.95;
 }
+.footer-version {
+    font-size: 0.85rem;
+    color: #6b7280;
+    vertical-align: middle;
+}
+.footer-tech {
+    display: inline-flex;
+    align-items: center;
+}
 @media (max-width: 576px) {
     .powered-by .footer-logo { height: 18px; }
     .powered-by .container { gap: .5rem; }
