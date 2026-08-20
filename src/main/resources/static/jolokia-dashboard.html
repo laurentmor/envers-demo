@@ -22,6 +22,35 @@
   </p>
   <div id="out"><pre id="json">(no data)</pre></div>
 
+  <section style="margin-top:18px">
+    <h2>Explanations</h2>
+    <p>Click an action above to fetch Jolokia JSON. This panel explains the most common keys and how to interpret the returned data.</p>
+    <div id="explain" style="background:#fff9e6;border:1px solid #f0e6b6;padding:12px;border-radius:6px;">
+      <strong>Common endpoints</strong>
+      <ul>
+        <li><b>/jolokia/list</b>: lists JMX domains → MBeans → attributes and operations. Use it to discover available MBeans.</li>
+        <li><b>/jolokia/read/...</b>: reads attributes of a specific MBean. Returns attribute names and values.</li>
+        <li><b>/jolokia/exec/...</b>: invokes an operation on an MBean (use with caution).</li>
+      </ul>
+      <strong>JSON keys you'll see</strong>
+      <ul>
+        <li><b>request</b>: the original Jolokia request metadata (type, mbean, attribute).</li>
+        <li><b>value</b>: main payload — for <code>list</code> it's nested domains; for <code>read</code> it's attribute map.</li>
+        <li><b>timestamp</b>: server-side event time (epoch seconds).</li>
+        <li><b>status</b>: numeric: 200 = OK; non-200 indicates error.</li>
+        <li><b>error</b>: error message when status != 200.</li>
+      </ul>
+      <strong>How to read MBean attribute data</strong>
+      <ol>
+        <li>Find the domain (left-side key) in the <code>list</code> result, expand to MBean names.</li>
+        <li>Attributes contain type/description in the list result; use <code>read</code> to get runtime values.</li>
+        <li>Metric-style attributes (e.g., <code>HeapMemoryUsage</code>) are objects with subfields like <code>init</code>, <code>used</code>, <code>committed</code>, <code>max</code> (bytes).</li>
+      </ol>
+      <div style="margin-top:8px"><em>Tip:</em> Use <code>/jolokia/read/java.lang:type=Runtime</code> to see JVM uptime, startTime, and inputArguments.</div>
+      <div id="detailsExplorer" style="margin-top:12px;padding-top:8px;border-top:1px dashed #efe1b8"></div>
+    </div>
+  </section>
+
   <script>
     const out = document.getElementById('json');
     async function jq(path){
@@ -35,10 +64,13 @@
 
     function showContextualExplanation(json, path){
       const panel = document.getElementById('explain');
+      const explorer = document.getElementById('detailsExplorer');
+      explorer.innerHTML = '';
       // Basic heuristics to augment explanation based on returned JSON
       try{
         if(json.request && json.request.type === 'list'){
           panel.insertAdjacentHTML('beforeend', '<p style="margin-top:8px"><b>Note:</b> This is a discovery response. Expand domains to see MBeans and their attributes (types and descriptions).</p>');
+          renderListDetails(json, explorer);
         } else if(path.includes('/read/') || (json.request && json.request.type==='read')){
           // Show attribute-oriented help
           const val = json.value;
@@ -50,11 +82,89 @@
             }
             html += '</p>';
             panel.insertAdjacentHTML('beforeend', html);
+            renderReadDetails(val, explorer);
           }
         } else if(json.status && json.status !== 200){
           panel.insertAdjacentHTML('beforeend', '<p style="color:#a33"><b>Error:</b> ' + (json.error||'Status '+json.status) + '</p>');
         }
       }catch(e){ /* ignore explanation errors */ }
+    }
+
+    // Small glossary for common attribute names or types
+    const ATTRIBUTE_EXPLANATIONS = {
+      'HeapMemoryUsage': 'Composite object with memory usage fields: init, used, committed, max (bytes).',
+      'NonHeapMemoryUsage': 'Non-heap memory usage object with init/used/committed/max (bytes).',
+      'ThreadCount': 'Current live thread count in the JVM.',
+      'PeakThreadCount': 'Largest number of live threads since JVM started or since peak reset.',
+      'DaemonThreadCount': 'Number of daemon threads currently running.',
+      'Uptime': 'JVM uptime in milliseconds.',
+      'StartTime': 'JVM start time (epoch millis).',
+      'InputArguments': 'JVM input arguments (command-line options).'
+    };
+
+    function renderListDetails(json, container){
+      try{
+        const value = json.value || {};
+        const domains = Object.keys(value).sort();
+        if(domains.length === 0) return;
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = '<h3 style="margin-top:6px;">Discovery Explorer</h3>';
+        domains.forEach(domain => {
+          const domainDiv = document.createElement('div');
+          domainDiv.style.marginTop = '8px';
+          const domainTitle = document.createElement('details');
+          domainTitle.innerHTML = `<summary><b>${domain}</b></summary>`;
+          const mbeans = value[domain] || {};
+          const mbList = document.createElement('div');
+          Object.keys(mbeans).sort().forEach(mb => {
+            const mbDiv = document.createElement('details');
+            mbDiv.style.marginLeft = '12px';
+            const summary = document.createElement('summary');
+            summary.innerHTML = `<code>${mb}</code>`;
+            mbDiv.appendChild(summary);
+            const info = mbeans[mb];
+            // attributes metadata in discovery responses often under 'attr' or 'attributes'
+            const attrs = info.attr || info.attributes || {};
+            const attrList = document.createElement('ul');
+            Object.keys(attrs).sort().forEach(attrName => {
+              const meta = attrs[attrName] || {};
+              const li = document.createElement('li');
+              const desc = meta.desc || meta.description || '';
+              const type = meta.type || meta['openType'] || '';
+              let expl = ATTRIBUTE_EXPLANATIONS[attrName] || '';
+              if(!expl && type){
+                if(type.toLowerCase().includes('compositedata')) expl = 'CompositeData: nested fields accessible via /jolokia/read.';
+                if(type.toLowerCase().includes('tabulardata')) expl = 'TabularData: table-like structure, iterate rows.';
+              }
+              li.innerHTML = `<b>${attrName}</b> <small style="color:#666">type=${type}</small> - ${desc} ${expl?('<div style="color:#222;margin-top:4px">'+expl+'</div>'):''}`;
+              attrList.appendChild(li);
+            });
+            mbDiv.appendChild(attrList);
+            mbList.appendChild(mbDiv);
+          });
+          domainTitle.appendChild(mbList);
+          domainDiv.appendChild(domainTitle);
+          wrapper.appendChild(domainDiv);
+        });
+        container.appendChild(wrapper);
+      }catch(e){ /* ignore */ }
+    }
+
+    function renderReadDetails(value, container){
+      try{
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = '<h3 style="margin-top:6px;">Read Response Explorer</h3>';
+        const table = document.createElement('table');
+        table.style.width = '100%';
+        table.style.borderCollapse = 'collapse';
+        Object.keys(value).forEach(k => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td style="vertical-align:top;padding:6px;border-top:1px solid #eee;width:180px"><b>${k}</b></td><td style="padding:6px;border-top:1px solid #eee"><pre style="margin:0">${JSON.stringify(value[k], null, 2)}</pre></td>`;
+          table.appendChild(tr);
+        });
+        wrapper.appendChild(table);
+        container.appendChild(wrapper);
+      }catch(e){ /* ignore */ }
     }
     document.getElementById('btnList').addEventListener('click', ()=>jq('/jolokia/list'));
     document.getElementById('btnRuntime').addEventListener('click', ()=>jq('/jolokia/read/java.lang:type=Runtime'));
