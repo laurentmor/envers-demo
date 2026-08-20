@@ -13,10 +13,12 @@
 <body>
   <h1>Jolokia Dashboard</h1>
   <p>Basic Jolokia JSON viewer. Ensure the application exposes the Jolokia servlet at <code>/jolokia</code>.</p>
+  <p style="color:#a33">This page requires an authenticated user with ACTUATOR_ADMIN role. Access to the Jolokia endpoint is additionally restricted by IP.</p>
   <p>
     <button id="btnList">List</button>
     <button id="btnRuntime">Runtime</button>
     <button id="btnThread">Thread Info</button>
+    <a href="/logout" style="margin-left:12px">Logout</a>
   </p>
   <div id="out"><pre id="json">(no data)</pre></div>
 

@@ -32,6 +32,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/login.html", "/login", "/css/**").permitAll()
                 .requestMatchers("/actuator/**", "/actuator.html", "/js/actuator.js").hasRole("ACTUATOR_ADMIN")
+                .requestMatchers("/jolokia/**").hasRole("ACTUATOR_ADMIN")
                 .anyRequest().authenticated())
             .formLogin(form -> form
                 .loginPage("/login.html")

@@ -1,10 +1,11 @@
 package com.example.enversdemo.config;
 
-import jakarta.servlet.Servlet;
-import org.jolokia.http.AgentServlet;
+import org.jolokia.server.core.http.AgentServlet;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import jakarta.servlet.Servlet;
 
 @Configuration
 public class JolokiaConfig {

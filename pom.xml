@@ -19,7 +19,7 @@
     <description>Spring Boot CRUD demo with Hibernate 7.4 + Envers auditing on an in-memory H2 database</description>
 
     <properties>
-        <java.version>25</java.version>
+        <java.version>17</java.version>
 
         <!-- Spring Boot 4.0.0 ships with Hibernate 7.1 by default.
              We pin explicitly to 7.4.x (latest stable line) to exercise it. -->
