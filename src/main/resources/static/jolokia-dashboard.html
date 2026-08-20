@@ -29,7 +29,32 @@
         const r = await fetch(path, {cache: 'no-store'});
         const j = await r.json();
         out.textContent = JSON.stringify(j, null, 2);
+        showContextualExplanation(j, path);
       }catch(e){ out.textContent = 'Error: '+e }
+    }
+
+    function showContextualExplanation(json, path){
+      const panel = document.getElementById('explain');
+      // Basic heuristics to augment explanation based on returned JSON
+      try{
+        if(json.request && json.request.type === 'list'){
+          panel.insertAdjacentHTML('beforeend', '<p style="margin-top:8px"><b>Note:</b> This is a discovery response. Expand domains to see MBeans and their attributes (types and descriptions).</p>');
+        } else if(path.includes('/read/') || (json.request && json.request.type==='read')){
+          // Show attribute-oriented help
+          const val = json.value;
+          if(val && typeof val === 'object'){
+            const keys = Object.keys(val).slice(0,10);
+            let html = '<p style="margin-top:8px"><b>Returned attributes</b>: ' + keys.join(', ');
+            if(Object.values(val).some(v=>v && typeof v === 'object' && ('used' in v || 'committed' in v))){
+              html += '<br/>Detected memory/usage object(s) — interpret fields as bytes: init, used, committed, max.';
+            }
+            html += '</p>';
+            panel.insertAdjacentHTML('beforeend', html);
+          }
+        } else if(json.status && json.status !== 200){
+          panel.insertAdjacentHTML('beforeend', '<p style="color:#a33"><b>Error:</b> ' + (json.error||'Status '+json.status) + '</p>');
+        }
+      }catch(e){ /* ignore explanation errors */ }
     }
     document.getElementById('btnList').addEventListener('click', ()=>jq('/jolokia/list'));
     document.getElementById('btnRuntime').addEventListener('click', ()=>jq('/jolokia/read/java.lang:type=Runtime'));
