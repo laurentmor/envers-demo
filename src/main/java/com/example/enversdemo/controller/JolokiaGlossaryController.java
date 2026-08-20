@@ -18,7 +18,8 @@ public class JolokiaGlossaryController {
     public ResponseEntity<?> saveGlossary(@RequestBody Object payload) {
         try {
             String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(payload);
-            Path out = Path.of("jolokia-glossary.json");
+            Path out = Path.of("src", "main", "resources", "static", "jolokia-glossary.json");
+            Files.createDirectories(out.getParent());
             Files.writeString(out, json);
             return ResponseEntity.ok().body(java.util.Map.of("path", out.toAbsolutePath().toString()));
         } catch (Exception e) {
