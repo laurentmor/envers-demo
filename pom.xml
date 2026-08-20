@@ -82,6 +82,15 @@
             <artifactId>h2</artifactId>
             <scope>compile</scope>
         </dependency>
+        <!-- Jolokia: JMX-over-HTTP bridge, used by the Actuator /jolokia endpoint 
+            Also see https://jolokia.org/documentation.html for more details.
+            Spring Boot 4.x no longer includes Jolokia support by default, so we add it explicitly here.
+        -->
+        <dependency>
+    <groupId>org.jolokia</groupId>
+    <artifactId>jolokia-support-spring</artifactId>
+    <version>2.2.1</version>
+</dependency>
 
         <!-- Spring Boot 4 split spring-boot-autoconfigure into per-feature modules;
              just having the H2 driver on the classpath no longer registers /h2-console. -->
@@ -116,6 +125,14 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <release>${java.version}</release>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
