@@ -19,6 +19,10 @@
     <button id="btnRuntime">Runtime</button>
     <button id="btnThread">Thread Info</button>
     <a href="/logout" style="margin-left:12px">Logout</a>
+    <button id="btnExport" style="margin-left:12px">Export Glossary (download)</button>
+    <button id="btnSaveServer">Save Glossary to Server</button>
+    <button id="btnCopy">Copy Explanations</button>
+    <button id="btnPrint">Print</button>
   </p>
   <div id="out"><pre id="json">(no data)</pre></div>
 
@@ -169,6 +173,57 @@
     document.getElementById('btnList').addEventListener('click', ()=>jq('/jolokia/list'));
     document.getElementById('btnRuntime').addEventListener('click', ()=>jq('/jolokia/read/java.lang:type=Runtime'));
     document.getElementById('btnThread').addEventListener('click', ()=>jq('/jolokia/read/java.lang:type=Threading'));
+
+    document.getElementById('btnExport').addEventListener('click', async ()=>{
+      try{
+        const resp = await fetch('/jolokia/list',{cache:'no-store'});
+        const data = await resp.json();
+        const glossary = buildGlossaryFromList(data);
+        const blob = new Blob([JSON.stringify(glossary,null,2)], {type:'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'jolokia-glossary.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      }catch(e){ alert('Export failed: '+e) }
+    });
+
+    document.getElementById('btnSaveServer').addEventListener('click', async ()=>{
+      try{
+        const resp = await fetch('/jolokia/list',{cache:'no-store'});
+        const data = await resp.json();
+        const glossary = buildGlossaryFromList(data);
+        const svc = await fetch('/jolokia/glossary/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(glossary)});
+        const j = await svc.json();
+        if(svc.ok) alert('Saved to: '+j.path); else alert('Save failed: '+(j.error||JSON.stringify(j)));
+      }catch(e){ alert('Save failed: '+e) }
+    });
+
+    document.getElementById('btnCopy').addEventListener('click', ()=>{
+      const explain = document.getElementById('explain').innerText;
+      navigator.clipboard.writeText(explain).then(()=>alert('Copied explanations to clipboard'), (err)=>alert('Copy failed: '+err));
+    });
+
+    document.getElementById('btnPrint').addEventListener('click', ()=>{
+      window.print();
+    });
+
+    function buildGlossaryFromList(listJson){
+      const glossary = {generated: new Date().toISOString(), domains:{}};
+      const val = listJson.value || {};
+      Object.keys(val).sort().forEach(domain=>{
+        const mbMap = val[domain] || {};
+        glossary.domains[domain] = {};
+        Object.keys(mbMap).sort().forEach(mb=>{
+          const info = mbMap[mb] || {};
+          const attrs = info.attr || info.attributes || {};
+          const amap = {};
+          Object.keys(attrs).sort().forEach(a=>{
+            const m = attrs[a] || {};
+            amap[a] = {type: m.type||m.openType||'', description: m.desc||m.description||''};
+          });
+          glossary.domains[domain][mb] = {attributes: amap};
+        });
+      });
+      return glossary;
+    }
   </script>
 </body>
 </html>
