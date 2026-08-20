@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Jolokia Dashboard</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:20px}
+    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto}
+    button{margin-right:8px}
+  </style>
+</head>
+<body>
+  <h1>Jolokia Dashboard</h1>
+  <p>Basic Jolokia JSON viewer. Ensure the application exposes the Jolokia servlet at <code>/jolokia</code>.</p>
+  <p>
+    <button id="btnList">List</button>
+    <button id="btnRuntime">Runtime</button>
+    <button id="btnThread">Thread Info</button>
+  </p>
+  <div id="out"><pre id="json">(no data)</pre></div>
+
+  <script>
+    const out = document.getElementById('json');
+    async function jq(path){
+      try{
+        const r = await fetch(path, {cache: 'no-store'});
+        const j = await r.json();
+        out.textContent = JSON.stringify(j, null, 2);
+      }catch(e){ out.textContent = 'Error: '+e }
+    }
+    document.getElementById('btnList').addEventListener('click', ()=>jq('/jolokia/list'));
+    document.getElementById('btnRuntime').addEventListener('click', ()=>jq('/jolokia/read/java.lang:type=Runtime'));
+    document.getElementById('btnThread').addEventListener('click', ()=>jq('/jolokia/read/java.lang:type=Threading'));
+  </script>
+</body>
+</html>

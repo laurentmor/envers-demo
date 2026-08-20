@@ -1,24 +1,20 @@
 package com.example.enversdemo.entity;
-
-import jakarta.persistence.Column;
+// Annotations for JPA / Hibernate
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+// Annotations for Hibernate Envers
 import org.hibernate.envers.Audited;
-import org.hibernate.envers.NotAudited;
-
+// Annotations for Jackson JSON serialization
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Set;
 
@@ -57,6 +53,11 @@ public class Worker {
 
     @OneToMany(mappedBy = "addedBy")
     @JsonIgnore
+    /**
+     * products added by this worker. We don't want to include this in the JSON response, 
+     * because it would be a huge list of products, 
+     * and we don't want to expose the internal structure of the database.
+     */
     private Set<Product> products;
 
 }
