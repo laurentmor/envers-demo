@@ -46,3 +46,19 @@ body {
 .toast.text-bg-danger {
     color: #fff;
 }
+
+/* Powered-by footer */
+.powered-by {
+    background: rgba(250,250,250,0.9);
+}
+.powered-by .footer-logo {
+    height: 20px;
+    width: auto;
+    display: inline-block;
+    margin-right: 8px;
+    opacity: 0.95;
+}
+@media (max-width: 576px) {
+    .powered-by .footer-logo { height: 18px; }
+    .powered-by .container { gap: .5rem; }
+}
